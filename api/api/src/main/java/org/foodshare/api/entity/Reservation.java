@@ -1,6 +1,8 @@
 package org.foodshare.api.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 @Entity
