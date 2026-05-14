@@ -4,6 +4,7 @@ import org.foodshare.api.entity.Offer;
 import org.foodshare.api.entity.Reservation;
 import org.foodshare.api.entity.ReservationStatus;
 import org.foodshare.api.entity.User;
+import org.foodshare.api.dto.ReservationDTO;
 import org.foodshare.api.repository.OfferRepository;
 import org.foodshare.api.repository.ReservationRepository;
 import org.foodshare.api.repository.UserRepository;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -31,7 +33,7 @@ public class ReservationService {
 
     // Réserver une portion d'une offre
     @Transactional
-    public Reservation createReservation(Long offerId, Long studentId) {
+    public ReservationDTO createReservation(Long offerId, Long studentId) {
         Offer offer = offerRepository.findById(offerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Offre non trouvée"));
         User student = userRepository.findById(studentId)
@@ -56,25 +58,45 @@ public class ReservationService {
         reservation.setOffer(offer);
         reservation.setStudent(student);
         reservation.setStatus(ReservationStatus.EN_ATTENTE);
-        return reservationRepository.save(reservation);
+        Reservation saved = reservationRepository.save(reservation);
+        return convertToDTO(saved);
     }
 
     // Lister les réservations d'un étudiant
-    public List<Reservation> getReservationsByStudent(Long studentId) {
-        return reservationRepository.findByStudentId(studentId);
+    public List<ReservationDTO> getReservationsByStudent(Long studentId) {
+        return reservationRepository.findByStudentId(studentId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // Lister les réservations pour une offre (utile pour l'offreur)
-    public List<Reservation> getReservationsByOffer(Long offerId) {
-        return reservationRepository.findByOfferId(offerId);
+    public List<ReservationDTO> getReservationsByOffer(Long offerId) {
+        return reservationRepository.findByOfferId(offerId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // Mettre à jour le statut d'une réservation (retirée / non retirée)
     @Transactional
-    public Reservation updateReservationStatus(Long reservationId, ReservationStatus newStatus) {
+    public ReservationDTO updateReservationStatus(Long reservationId, ReservationStatus newStatus) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Réservation non trouvée"));
         reservation.setStatus(newStatus);
-        return reservationRepository.save(reservation);
+        Reservation updated = reservationRepository.save(reservation);
+        return convertToDTO(updated);
+    }
+
+    // Conversion entité -> DTO
+    private ReservationDTO convertToDTO(Reservation reservation) {
+        return new ReservationDTO(
+                reservation.getId(),
+                reservation.getOffer().getId(),
+                reservation.getOffer().getTitle(),
+                reservation.getStudent().getId(),
+                reservation.getReservationDate(),
+                reservation.getStatus().toString()
+        );
     }
 }
