@@ -25,16 +25,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
-                        // Auth endpoints
                         .requestMatchers("/api/auth/**").permitAll()
-                        // H2 console
                         .requestMatchers("/h2-console/**").permitAll()
-                        // Swagger / OpenAPI (springdoc / springfox)
-                        .requestMatchers("/swagger-ui.html").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/swagger-resources/**").permitAll()
-                        .requestMatchers("/webjars/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
