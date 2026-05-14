@@ -45,13 +45,7 @@ public class OfferController {
         return offerService.getOfferById(id);
     }
 
-    // GET /api/offers/offerer?offererId=1 → offres d'un offreur spécifique
-    @GetMapping("/offerer")
-    public List<OffreDTO> getOffersByOfferer(@RequestParam Long offererId) {
-        return offerService.getOffersByOfferer(offererId);
-    }
-
-    // POST /api/offers?offererId=1 -> créer une offre (en attendant l'authentification)
+    // POST /api/offers -> créer une offre (l'offreur est l'utilisateur authentifié)
     @PostMapping
     public ResponseEntity<OffreDTO> createOffer(@Valid @RequestBody OffreDTO offer) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

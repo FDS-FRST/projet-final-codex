@@ -45,11 +45,6 @@ public class ReservationController {
         return List.of();
     }
 
-    // Lister les réservations d'une offre (pour l'offreur)
-    @GetMapping("/offer/{offerId}")
-    public List<ReservationDTO> getReservationsByOffer(@PathVariable Long offerId) {
-        return reservationService.getReservationsByOffer(offerId);
-    }
 
     @PatchMapping("/{reservationId}/status")
     public ReservationDTO updateStatus(@PathVariable Long reservationId,
