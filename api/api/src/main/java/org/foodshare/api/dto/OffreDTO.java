@@ -1,5 +1,7 @@
 package org.foodshare.api.dto;
 
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public class OffreDTO {
@@ -9,7 +11,9 @@ public class OffreDTO {
     private int quantity;
     private int quantityRemaining;
     private double price;
+    @NotNull
     private LocalDateTime startRetrieval;
+    @NotNull
     private LocalDateTime endRetrieval;
     private String location;
     private Long offererId;   // seul l'ID, pas tout l'objet User
@@ -95,6 +99,14 @@ public class OffreDTO {
 
     public void setEndRetrieval(LocalDateTime endRetrieval) {
         this.endRetrieval = endRetrieval;
+    }
+
+    @AssertTrue(message = "La date de fin doit être après la date de début")
+    public boolean isRetrievalDateRangeValid() {
+        if (startRetrieval == null || endRetrieval == null) {
+            return true;
+        }
+        return endRetrieval.isAfter(startRetrieval);
     }
 
     public String getLocation() {

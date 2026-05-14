@@ -1,5 +1,5 @@
 package org.foodshare.api.dto;
-
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 
@@ -82,5 +82,11 @@ public class CreateOffreRequest {
         this.location = location;
     }
 
-
+    @AssertTrue(message = "La date de fin doit être postérieure à la date de début")
+    public boolean isEndAfterStart() {
+        if (startRetrieval == null || endRetrieval == null) {
+            return true; // laisse @NotNull s'en occuper
+        }
+        return endRetrieval.isAfter(startRetrieval);
+    }
 }

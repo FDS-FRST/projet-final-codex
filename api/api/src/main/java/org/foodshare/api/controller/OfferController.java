@@ -1,5 +1,6 @@
 package org.foodshare.api.controller;
 
+import jakarta.validation.Valid;
 import org.foodshare.api.dto.OffreDTO;
 import org.foodshare.api.service.OfferService;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class OfferController {
 
     // POST /api/offers?offererId=1 -> créer une offre (en attendant l'authentification)
     @PostMapping
-    public ResponseEntity<OffreDTO> createOffer(@RequestBody OffreDTO offer, @RequestParam Long offererId) {
+    public ResponseEntity<OffreDTO> createOffer(@Valid @RequestBody OffreDTO offer, @RequestParam Long offererId) {
         OffreDTO saved = offerService.createOffer(offer, offererId);
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
