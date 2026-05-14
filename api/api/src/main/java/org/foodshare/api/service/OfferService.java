@@ -6,6 +6,8 @@ import org.foodshare.api.entity.User;
 import org.foodshare.api.repository.OfferRepository;
 import org.foodshare.api.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -42,7 +44,7 @@ public class OfferService {
     public OffreDTO createOffer(OffreDTO offreDTO, Long offererId) {
         // 1. Récupère l'utilisateur offreur
         User offerer = userRepository.findById(offererId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur offreur non trouvé"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur offreur non trouvé"));
 
         // 2. Crée une nouvelle entité Offer (vide)
         Offer offer = new Offer();
@@ -83,7 +85,8 @@ public class OfferService {
     // Récupérer une offre par son id
     public OffreDTO getOfferById(Long id) {
         Offer offer = offerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Offre non trouvée"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Offre non trouvée"));
+
         return convertToDTO(offer);
     }
 }
