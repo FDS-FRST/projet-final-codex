@@ -62,6 +62,18 @@ public class ReservationService {
         return convertToDTO(saved);
     }
 
+    // Lister toutes les réservations sur les offres d'un offreur spécifique
+    public List<ReservationDTO> getReservationsByOfferer(Long offererId) {
+        // 1. Récupérer toutes les offres de cet offreur
+        List<Offer> offers = offerRepository.findByOffererId(offererId);
+
+        // 2. Pour chaque offre, récupérer ses réservations
+        return offers.stream()
+                .flatMap(offer -> reservationRepository.findByOfferId(offer.getId()).stream())
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     // Lister les réservations d'un étudiant
     public List<ReservationDTO> getReservationsByStudent(Long studentId) {
         return reservationRepository.findByStudentId(studentId)

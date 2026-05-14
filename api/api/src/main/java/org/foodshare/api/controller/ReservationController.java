@@ -37,6 +37,12 @@ public class ReservationController {
         return reservationService.getReservationsByOffer(offerId);
     }
 
+    // GET /api/reservations/offerer?offererId=1 → toutes les réservations sur les offres d'un offreur
+    @GetMapping("/offerer")
+    public List<ReservationDTO> getReservationsByOfferer(@RequestParam Long offererId) {
+        return reservationService.getReservationsByOfferer(offererId);
+    }
+
     @PatchMapping("/{reservationId}/status")
     public ReservationDTO updateStatus(@PathVariable Long reservationId,
                                        @RequestParam ReservationStatus status) {
