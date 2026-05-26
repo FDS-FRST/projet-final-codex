@@ -8,12 +8,19 @@ function getHeaders() {
   };
 }
 
+async function handleResponse(response) {
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `Erreur HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
 export async function fetchGet(endpoint) {
   const res = await fetch(`${API_BASE}${endpoint}`, {
     headers: getHeaders()
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse(res);
 }
 
 export async function fetchPost(endpoint, data) {
@@ -22,8 +29,7 @@ export async function fetchPost(endpoint, data) {
     headers: getHeaders(),
     body: JSON.stringify(data)
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse(res);
 }
 
 export async function fetchPatch(endpoint, data) {
@@ -32,6 +38,5 @@ export async function fetchPatch(endpoint, data) {
     headers: getHeaders(),
     body: JSON.stringify(data)
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse(res);
 }
