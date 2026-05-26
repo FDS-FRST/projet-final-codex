@@ -1,4 +1,4 @@
-import { fetchGet, fetchPost } from './client';
+import { fetchPost, fetchGet } from './client';
 
 export async function getMyOffers() {
   return fetchGet('/offers/me');
