@@ -1,9 +1,5 @@
-// src/api/client.js
-
-// Utilise l'URL définie dans .env ou par défaut '/api' (pour le proxy Vite)
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
-// Construit les en-têtes avec le token JWT s'il existe
 function getHeaders() {
   const token = localStorage.getItem('token');
   return {
@@ -12,24 +8,27 @@ function getHeaders() {
   };
 }
 
-// Gère la réponse HTTP : si erreur, lance une exception avec le message
 async function handleResponse(response) {
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `Erreur HTTP ${response.status}`);
+    let errorMessage = `Erreur HTTP ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
+    } catch (e) {
+      const text = await response.text();
+      if (text) errorMessage = text;
+    }
+    console.error('Erreur backend:', errorMessage);
+    throw new Error(errorMessage);
   }
   return response.json();
 }
 
-// Requête GET
 export async function fetchGet(endpoint) {
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    headers: getHeaders()
-  });
+  const res = await fetch(`${API_BASE}${endpoint}`, { headers: getHeaders() });
   return handleResponse(res);
 }
 
-// Requête POST
 export async function fetchPost(endpoint, data) {
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
@@ -39,7 +38,6 @@ export async function fetchPost(endpoint, data) {
   return handleResponse(res);
 }
 
-// Requête PATCH
 export async function fetchPatch(endpoint, data) {
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'PATCH',
