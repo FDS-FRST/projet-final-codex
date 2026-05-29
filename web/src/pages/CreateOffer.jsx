@@ -36,16 +36,17 @@ export const CreateOffer = () => {
       return;
     }
 
+    // Correction : utiliser 'titre' au lieu de 'title'
     const formattedData = {
       description: offerData.description,
-      endRetrieval: offerData.endRetrieval + ':00',
+      endRetrieval: offerData.endRetrieval,  // Enlevez le ':00' si nécessaire
       location: offerData.location,
       price: price,
       quantity: quantity,
       quantityRemaining: quantity,
-      startRetrieval: offerData.startRetrieval + ':00',
-      title: offerData.title,
-      offererId: user.id
+      startRetrieval: offerData.startRetrieval,  // Enlevez le ':00' si nécessaire
+      titre: offerData.title,  // ← Changement important ici
+      offererId: Number(user.id)  // Conversion en nombre
     };
 
     console.log('📤 Envoi des données :', formattedData);
