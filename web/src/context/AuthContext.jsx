@@ -1,6 +1,19 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { login as apiLogin, register as apiRegister } from '../api/auth';
 
+// Décode le JWT pour extraire l'ID
+function decodeJWT(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error('Erreur décodage JWT:', e);
+    return null;
+  }
+}
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -8,7 +21,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Au lieu d'appeler /me (qui est bloqué par CORS), on restaure l'utilisateur depuis localStorage
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     if (token && storedUser) {
@@ -19,36 +31,44 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const data = await apiLogin(credentials);
-    // Si le backend ne renvoie pas user, on le construit
-    if (!data.user && data.token) {
-      data.user = {
-        email: credentials.email,
-        role: 'OFFREUR',
-        name: credentials.email.split('@')[0]
-      };
+    const token = data.token;
+    let userId = null;
+    const decoded = decodeJWT(token);
+    if (decoded) {
+      userId = decoded.sub || decoded.userId || decoded.id;
     }
-    // Normalisation du rôle
-    if (data.user?.role) {
-      data.user.role = data.user.role.toUpperCase().replace('ROLE_', '');
+    let userObj = data.user;
+    if (!userObj && token) {
+      userObj = { email: credentials.email, role: 'OFFREUR' };
     }
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    setUser(data.user);
-    return data;
+    if (userId && userObj) {
+      userObj.id = userId;
+    }
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userObj));
+    setUser(userObj);
+    return { ...data, user: userObj };
   };
 
   const register = async (userData) => {
     const data = await apiRegister(userData);
-    if (!data.user && data.token) {
-      data.user = { ...userData, role: userData.role || 'OFFREUR' };
+    const token = data.token;
+    let userId = null;
+    const decoded = decodeJWT(token);
+    if (decoded) {
+      userId = decoded.sub || decoded.userId || decoded.id;
     }
-    if (data.user?.role) {
-      data.user.role = data.user.role.toUpperCase().replace('ROLE_', '');
+    let userObj = data.user;
+    if (!userObj && token) {
+      userObj = { ...userData, role: userData.role || 'OFFREUR' };
     }
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    setUser(data.user);
-    return data;
+    if (userId && userObj) {
+      userObj.id = userId;
+    }
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userObj));
+    setUser(userObj);
+    return { ...data, user: userObj };
   };
 
   const logout = () => {
