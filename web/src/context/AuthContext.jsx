@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
     let userId = null;
     const decoded = decodeJWT(token);
     if (decoded) {
-      userId = decoded.sub || decoded.userId || decoded.id;
+      userId = decoded.userId || decoded.id || decoded.sub;
     }
     let userObj = data.user;
     if (!userObj && token) {
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
     let userId = null;
     const decoded = decodeJWT(token);
     if (decoded) {
-      userId = decoded.sub || decoded.userId || decoded.id;
+      userId = decoded.userId || decoded.id || decoded.sub;
     }
     let userObj = data.user;
     if (!userObj && token) {

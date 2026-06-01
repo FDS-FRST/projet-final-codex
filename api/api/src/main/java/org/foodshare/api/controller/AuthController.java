@@ -37,7 +37,7 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou mot de passe incorrect");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().toString());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().toString(), user.getId());
         return ResponseEntity.ok(new JwtResponse(token, user.getEmail(), user.getRole().toString()));
     }
 
@@ -58,7 +58,7 @@ public class AuthController {
         User saved = userRepository.save(user);
 
         // Générer un token JWT pour l'utilisateur nouvellement créé
-        String token = jwtUtil.generateToken(saved.getEmail(), saved.getRole().toString());
+        String token = jwtUtil.generateToken(saved.getEmail(), saved.getRole().toString(), saved.getId());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new JwtResponse(token, saved.getEmail(), saved.getRole().toString()));
