@@ -89,4 +89,43 @@ public class OfferService {
 
         return convertToDTO(offer);
     }
+
+    @Transactional
+    public OffreDTO updateOffer(Long id, OffreDTO offreDTO, Long offererId) {
+        Offer offer = offerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Offre non trouvée"));
+
+        if (!offer.getOfferer().getId().equals(offererId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous ne pouvez modifier que vos propres offres");
+        }
+
+        int alreadyReserved = Math.max(0, offer.getQuantity() - offer.getQuantityRemaining());
+        if (offreDTO.getQuantity() < alreadyReserved) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La quantité ne peut pas être inférieure aux réservations déjà faites");
+        }
+
+        offer.setTitle(offreDTO.getTitre());
+        offer.setDescription(offreDTO.getDescription());
+        offer.setPrice(offreDTO.getPrice());
+        offer.setStartRetrieval(offreDTO.getStartRetrieval());
+        offer.setEndRetrieval(offreDTO.getEndRetrieval());
+        offer.setLocation(offreDTO.getLocation());
+        offer.setQuantity(offreDTO.getQuantity());
+        offer.setQuantityRemaining(offreDTO.getQuantity() - alreadyReserved);
+
+        Offer updated = offerRepository.save(offer);
+        return convertToDTO(updated);
+    }
+
+    @Transactional
+    public void deleteOffer(Long id, Long offererId) {
+        Offer offer = offerRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Offre non trouvée"));
+
+        if (!offer.getOfferer().getId().equals(offererId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous ne pouvez supprimer que vos propres offres");
+        }
+
+        offerRepository.delete(offer);
+    }
 }

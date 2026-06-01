@@ -1,17 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 
-export const OfferForm = ({ onSubmit, initialData = {} }) => {
-  const [form, setForm] = useState({
-    title: initialData.title || '',
-    description: initialData.description || '',
-    quantity: initialData.quantity || 1,
-    price: initialData.price || 0,
-    startRetrieval: initialData.startRetrieval || '',
-    endRetrieval: initialData.endRetrieval || '',
-    location: initialData.location || '',
-  });
+const buildFormState = (data) => ({
+  title: data?.title || '',
+  description: data?.description || '',
+  quantity: data?.quantity || 1,
+  price: data?.price || 0,
+  startRetrieval: data?.startRetrieval || '',
+  endRetrieval: data?.endRetrieval || '',
+  location: data?.location || '',
+});
+
+export const OfferForm = ({ onSubmit, initialData, submitLabel = "Publier l'offre" }) => {
+  const [form, setForm] = useState(() => buildFormState(initialData));
+
+  useEffect(() => {
+    if (!initialData) {
+      return;
+    }
+    setForm(buildFormState(initialData));
+  }, [initialData]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -29,7 +38,7 @@ export const OfferForm = ({ onSubmit, initialData = {} }) => {
       <Input label="Début retrait" type="datetime-local" name="startRetrieval" value={form.startRetrieval} onChange={handleChange} required />
       <Input label="Fin retrait" type="datetime-local" name="endRetrieval" value={form.endRetrieval} onChange={handleChange} required />
       <Input label="Lieu" name="location" value={form.location} onChange={handleChange} required />
-      <Button type="submit">Publier l'offre</Button>
+      <Button type="submit">{submitLabel}</Button>
     </form>
   );
 };

@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useOffers } from '../hooks/useOffers';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect, useState } from 'react';
+import { ReservationList } from '../components/reservations/ReservationList';
+import { getReservationsForOffer, updateReservationStatus } from '../api/reservations';
+import { Button } from '../components/common/Button';
 
 export const OfferDetail = () => {
   const { id } = useParams();
@@ -15,6 +18,8 @@ export const OfferDetail = () => {
   const [erreur, setErreur] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const [suppression, setSuppression] = useState(false);
+  const [reservations, setReservations] = useState([]);
+  const [reservationError, setReservationError] = useState('');
 
   useEffect(() => {
     const chargerOffre = async () => {
@@ -34,6 +39,21 @@ export const OfferDetail = () => {
     }
   }, [id, recupererOffreParId]);
 
+  useEffect(() => {
+    const chargerReservations = async () => {
+      if (!id || !user) return;
+
+      try {
+        const data = await getReservationsForOffer(id);
+        setReservations(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setReservationError(err.message || 'Impossible de charger les réservations');
+      }
+    };
+
+    chargerReservations();
+  }, [id, user]);
+
   const handleSupprimer = async () => {
     setSuppression(true);
     try {
@@ -44,6 +64,15 @@ export const OfferDetail = () => {
     } finally {
       setSuppression(false);
       setShowConfirm(false);
+    }
+  };
+
+  const handleStatusChange = async (reservationId, status) => {
+    try {
+      const updated = await updateReservationStatus(reservationId, status);
+      setReservations((prev) => prev.map((res) => (res.id === reservationId ? updated : res)));
+    } catch (err) {
+      setReservationError(err.message || 'Impossible de changer le statut');
     }
   };
 
@@ -73,7 +102,7 @@ export const OfferDetail = () => {
     );
   }
 
-  const estProprietaire = user && offre && user.id === offre.offererId;
+  const estProprietaire = user && offre && String(user.id) === String(offre.offererId);
 
   return (
     <div className="container">
@@ -91,6 +120,9 @@ export const OfferDetail = () => {
 
         {estProprietaire && (
           <div style={{ marginTop: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <Button variant="secondary" onClick={() => navigate(`/offers/${id}/edit`)}>Modifier</Button>
+            </div>
             {!showConfirm ? (
               <button
                 onClick={() => setShowConfirm(true)}
@@ -107,6 +139,12 @@ export const OfferDetail = () => {
             )}
           </div>
         )}
+
+        <div style={{ marginTop: '2rem' }}>
+          <h2>Réservations reçues</h2>
+          {reservationError && <p style={{ color: 'red' }}>{reservationError}</p>}
+          <ReservationList reservations={reservations} onStatusChange={handleStatusChange} />
+        </div>
       </div>
     </div>
   );

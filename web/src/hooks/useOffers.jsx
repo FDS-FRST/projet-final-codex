@@ -29,7 +29,9 @@ export const useOffers = () => {
   }, []);
 
   const supprimerOffre = useCallback((id) => {
-    return deleteOffer(id);
+    return deleteOffer(id).finally(() => {
+      setOffers(prev => (Array.isArray(prev) ? prev.filter((offer) => String(offer.id) !== String(id)) : []));
+    });
   }, []);
 
   useEffect(() => {
