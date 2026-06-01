@@ -38,7 +38,7 @@ public class AuthController {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().toString(), user.getId());
-        return ResponseEntity.ok(new JwtResponse(token, user.getEmail(), user.getRole().toString()));
+        return ResponseEntity.ok(new JwtResponse(token, user.getEmail(), user.getName(), user.getRole().toString()));
     }
 
     @PostMapping("/register")
@@ -61,6 +61,6 @@ public class AuthController {
         String token = jwtUtil.generateToken(saved.getEmail(), saved.getRole().toString(), saved.getId());
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new JwtResponse(token, saved.getEmail(), saved.getRole().toString()));
+            .body(new JwtResponse(token, saved.getEmail(), saved.getName(), saved.getRole().toString()));
     }
 }

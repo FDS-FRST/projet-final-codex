@@ -13,7 +13,7 @@ export const Navbar = () => {
     <nav style={{ background: '#1f2937', color: 'white', padding: '1rem', display: 'flex', justifyContent: 'space-between' }}>
       <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>FoodShare Offreur</Link>
       <div>
-        <span style={{ marginRight: '1rem' }}>{user.name} ({user.role})</span>
+        <span style={{ marginRight: '1rem' }}>{user.name}</span>
         <button onClick={handleLogout} className="btn btn-secondary">Déconnexion</button>
       </div>
     </nav>
