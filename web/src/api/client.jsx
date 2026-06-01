@@ -1,3 +1,4 @@
+// src/api/client.js
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function getHeaders() {
@@ -43,6 +44,14 @@ export async function fetchPatch(endpoint, data) {
     method: 'PATCH',
     headers: getHeaders(),
     body: JSON.stringify(data)
+  });
+  return handleResponse(res);
+}
+
+export async function fetchDelete(endpoint) {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method: 'DELETE',
+    headers: getHeaders()
   });
   return handleResponse(res);
 }
