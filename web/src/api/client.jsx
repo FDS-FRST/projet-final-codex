@@ -10,19 +10,36 @@ function getHeaders() {
 }
 
 async function handleResponse(response) {
+  const rawBody = await response.text();
+
+  const parseBody = () => {
+    if (!rawBody) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(rawBody);
+    } catch {
+      return rawBody;
+    }
+  };
+
+  const parsedBody = parseBody();
+
   if (!response.ok) {
     let errorMessage = `Erreur HTTP ${response.status}`;
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
-    } catch (e) {
-      const text = await response.text();
-      if (text) errorMessage = text;
+
+    if (parsedBody && typeof parsedBody === 'object') {
+      errorMessage = parsedBody.error || parsedBody.message || errorMessage;
+    } else if (typeof parsedBody === 'string' && parsedBody.trim()) {
+      errorMessage = parsedBody;
     }
+
     console.error('Erreur backend:', errorMessage);
     throw new Error(errorMessage);
   }
-  return response.json();
+
+  return parsedBody;
 }
 
 export async function fetchGet(endpoint) {
