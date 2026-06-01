@@ -1,63 +1,113 @@
+// src/pages/OfferDetail.jsx
+import { useParams, useNavigate } from 'react-router-dom';
+import { useOffers } from '../hooks/useOffers';
+import { useAuth } from '../hooks/useAuth';
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getOfferById } from '../api/offers';
-import { getReservationsForOffer, updateReservationStatus } from '../api/reservations';
-import { ReservationList } from '../components/reservations/ReservationList';
-import { formatDateTime } from '../utils/dateHelpers';
-import { Button } from '../components/common/Button';
 
 export const OfferDetail = () => {
   const { id } = useParams();
-  const [offer, setOffer] = useState(null);
-  const [reservations, setReservations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { recupererOffreParId, supprimerOffre } = useOffers();
+  const { user } = useAuth();
+  
+  const [offre, setOffre] = useState(null);
+  const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [suppression, setSuppression] = useState(false);
 
-  const loadData = async () => {
+  useEffect(() => {
+    const chargerOffre = async () => {
+      try {
+        setChargement(true);
+        const donnees = await recupererOffreParId(id);
+        setOffre(donnees);
+      } catch (err) {
+        setErreur(err.message);
+      } finally {
+        setChargement(false);
+      }
+    };
+    
+    if (id) {
+      chargerOffre();
+    }
+  }, [id, recupererOffreParId]);
+
+  const handleSupprimer = async () => {
+    setSuppression(true);
     try {
-      const [offerData, reservationsData] = await Promise.all([
-        getOfferById(id),
-        getReservationsForOffer(id)
-      ]);
-      setOffer(offerData);
-      setReservations(reservationsData);
+      await supprimerOffre(id);
+      navigate('/');
     } catch (err) {
-      setError(err.message);
+      setErreur('Impossible de supprimer l\'offre');
     } finally {
-      setLoading(false);
+      setSuppression(false);
+      setShowConfirm(false);
     }
   };
 
-  useEffect(() => { loadData(); }, [id]);
+  if (chargement) {
+    return (
+      <div className="container">
+        <div style={{ textAlign: 'center', padding: '2rem' }}>⏳ Chargement...</div>
+      </div>
+    );
+  }
 
-  const handleStatusChange = async (reservationId, newStatus) => {
-    try {
-      await updateReservationStatus(reservationId, newStatus);
-      setReservations(prev =>
-        prev.map(r => r.id === reservationId ? { ...r, status: newStatus } : r)
-      );
-    } catch (err) {
-      alert('Erreur mise à jour');
-    }
-  };
+  if (erreur || !offre) {
+    return (
+      <div className="container">
+        <div style={{
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          color: '#c00',
+          padding: '2rem',
+          borderRadius: '0.5rem',
+          textAlign: 'center'
+        }}>
+          <h2>❌ {erreur || 'Offre non trouvée'}</h2>
+          <button onClick={() => navigate('/')}>Retour à l'accueil</button>
+        </div>
+      </div>
+    );
+  }
 
-  if (loading) return <p>Chargement...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
-  if (!offer) return <p>Offre non trouvée</p>;
+  const estProprietaire = user && offre && user.id === offre.offererId;
 
   return (
     <div className="container">
-      <Link to="/">&larr; Retour</Link>
-      <div className="card">
-        <h1>{offer.title}</h1>
-        <p>{offer.description}</p>
-        <p><strong>Prix :</strong> {offer.price === 0 ? 'Gratuit' : `${offer.price} €`}</p>
-        <p><strong>Quantité :</strong> {offer.quantityRemaining} / {offer.quantity}</p>
-        <p><strong>Lieu :</strong> {offer.location}</p>
-        <p><strong>Créneau :</strong> {formatDateTime(offer.startRetrieval)} - {formatDateTime(offer.endRetrieval)}</p>
+      <button onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>← Retour</button>
+
+      <div style={{ border: '1px solid #ddd', borderRadius: '0.5rem', padding: '1.5rem' }}>
+        <h1>{offre.titre || offre.title}</h1>
+        <p><strong>Description:</strong> {offre.description}</p>
+        <p><strong>Quantité:</strong> {offre.quantity}</p>
+        <p><strong>Quantité restante:</strong> {offre.quantityRemaining}</p>
+        <p><strong>Prix:</strong> {offre.price === 0 ? 'Gratuit' : `${offre.price} €`}</p>
+        <p><strong>Lieu:</strong> {offre.location}</p>
+        <p><strong>Début retrait:</strong> {new Date(offre.startRetrieval).toLocaleString()}</p>
+        <p><strong>Fin retrait:</strong> {new Date(offre.endRetrieval).toLocaleString()}</p>
+
+        {estProprietaire && (
+          <div style={{ marginTop: '1rem' }}>
+            {!showConfirm ? (
+              <button
+                onClick={() => setShowConfirm(true)}
+                style={{ backgroundColor: '#dc2626', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}
+              >
+                🗑️ Supprimer
+              </button>
+            ) : (
+              <div style={{ backgroundColor: '#fee', padding: '1rem', borderRadius: '0.375rem' }}>
+                <p>Supprimer cette offre ?</p>
+                <button onClick={handleSupprimer} disabled={suppression}>Oui</button>
+                <button onClick={() => setShowConfirm(false)}>Non</button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      <h2>Réservations</h2>
-      <ReservationList reservations={reservations} onStatusChange={handleStatusChange} />
     </div>
   );
 };
