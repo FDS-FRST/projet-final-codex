@@ -8,8 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Locale;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -46,9 +49,25 @@ public class ReservationController {
     }
 
 
-    @PatchMapping("/{reservationId}/status")
+    @PatchMapping("/{reservationId}")
     public ReservationDTO updateStatus(@PathVariable Long reservationId,
-                                       @RequestParam ReservationStatus status) {
+                                       @RequestBody Map<String, String> payload) {
+        String statusValue = payload.get("status");
+        if (statusValue == null || statusValue.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le statut est obligatoire");
+        }
+
+        ReservationStatus status;
+        try {
+            String normalized = statusValue.toUpperCase(Locale.ROOT).replace('-', '_');
+            if ("NON_RETIRER".equals(normalized)) {
+                normalized = "NON_RETIREE";
+            }
+            status = ReservationStatus.valueOf(normalized);
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Statut invalide: " + statusValue);
+        }
+
         return reservationService.updateReservationStatus(reservationId, status);
     }
 }

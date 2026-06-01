@@ -7,6 +7,7 @@ import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { CreateOffer } from './pages/CreateOffer';
 import { OfferDetail } from './pages/OfferDetail';
+import { EditOffer } from './pages/EditOffer';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -29,6 +30,7 @@ function AppContent() {
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/create-offer" element={<ProtectedRoute><CreateOffer /></ProtectedRoute>} />
         <Route path="/offers/:id" element={<ProtectedRoute><OfferDetail /></ProtectedRoute>} />
+        <Route path="/offers/:id/edit" element={<ProtectedRoute><EditOffer /></ProtectedRoute>} />
       </Routes>
     </>
   );

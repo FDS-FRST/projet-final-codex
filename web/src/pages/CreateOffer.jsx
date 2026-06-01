@@ -75,7 +75,7 @@ export const CreateOffer = () => {
           ❌ {errorMessage}
         </div>
       )}
-      <OfferForm onSubmit={handleSubmit} />
+      <OfferForm onSubmit={handleSubmit} submitLabel="Publier l'offre" />
     </div>
   );
 };
