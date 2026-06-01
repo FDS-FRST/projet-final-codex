@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { getMyOffers, createOffer } from '../api/offers';
+import { useState, useEffect, useCallback } from 'react';
+import { getMyOffers, createOffer, getOfferById, deleteOffer } from '../api/offers';
 
 export const useOffers = () => {
   const [offers, setOffers] = useState([]);
@@ -10,7 +10,7 @@ export const useOffers = () => {
     try {
       setLoading(true);
       const data = await getMyOffers();
-      setOffers(data);
+      setOffers(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -20,13 +20,29 @@ export const useOffers = () => {
 
   const addOffer = async (offerData) => {
     const newOffer = await createOffer(offerData);
-    setOffers(prev => [newOffer, ...prev]);
+    setOffers(prev => [newOffer, ...(Array.isArray(prev) ? prev : [])]);
     return newOffer;
   };
+
+  const recupererOffreParId = useCallback((id) => {
+    return getOfferById(id);
+  }, []);
+
+  const supprimerOffre = useCallback((id) => {
+    return deleteOffer(id);
+  }, []);
 
   useEffect(() => {
     fetchOffers();
   }, []);
 
-  return { offers, loading, error, fetchOffers, addOffer };
+  return {
+    offers,
+    loading,
+    error,
+    fetchOffers,
+    addOffer,
+    recupererOffreParId,
+    supprimerOffre,
+  };
 };
