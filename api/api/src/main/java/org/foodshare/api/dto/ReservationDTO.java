@@ -7,15 +7,17 @@ public class ReservationDTO {
     private Long offerId;
     private String offerTitle;
     private Long studentId;
+    private String studentName;
     private LocalDateTime reservationDate;
     private String status;
 
     //Constructeur
-    public ReservationDTO(Long id, Long offerId, String offerTitle, Long studentId, LocalDateTime reservationDate, String status) {
+    public ReservationDTO(Long id, Long offerId, String offerTitle, Long studentId, String studentName, LocalDateTime reservationDate, String status) {
         this.id = id;
         this.offerId = offerId;
         this.offerTitle = offerTitle;
         this.studentId = studentId;
+        this.studentName = studentName;
         this.reservationDate = reservationDate;
         this.status = status;
     }
@@ -51,6 +53,14 @@ public class ReservationDTO {
 
     public void setStudentId(Long studentId) {
         this.studentId = studentId;
+    }
+
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
     }
 
     public LocalDateTime getReservationDate() {

@@ -102,13 +102,18 @@ public class ReservationService {
 
     // Conversion entité -> DTO
     private ReservationDTO convertToDTO(Reservation reservation) {
+        String status = reservation.getStatus() == ReservationStatus.NON_RETIRER
+            ? ReservationStatus.NON_RETIREE.toString()
+            : reservation.getStatus().toString();
+
         return new ReservationDTO(
                 reservation.getId(),
                 reservation.getOffer().getId(),
                 reservation.getOffer().getTitle(),
                 reservation.getStudent().getId(),
+                reservation.getStudent().getName(),
                 reservation.getReservationDate(),
-                reservation.getStatus().toString()
+            status
         );
     }
 }

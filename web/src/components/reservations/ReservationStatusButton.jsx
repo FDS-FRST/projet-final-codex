@@ -3,7 +3,7 @@ import { Button } from '../common/Button';
 export const ReservationStatusButton = ({ reservation, onStatusChange }) => {
   const handleMark = (newStatus) => onStatusChange(reservation.id, newStatus);
 
-  if (reservation.status === 'RETIREE' || reservation.status === 'NON_RETIREE') {
+  if (reservation.status === 'RETIREE' || reservation.status === 'NON_RETIREE' || reservation.status === 'NON_RETIRER') {
     return <p>Déjà traité</p>;
   }
 
