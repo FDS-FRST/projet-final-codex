@@ -54,12 +54,12 @@ public class OfferController {
     @PostMapping
     public ResponseEntity<OffreDTO> createOffer(@Valid @RequestBody OffreDTO offer) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long offererId = null;
         if (principal instanceof User) {
-            offererId = ((User) principal).getId();
+            Long offererId = ((User) principal).getId();
+            OffreDTO saved = offerService.createOffer(offer, offererId);
+            return new ResponseEntity<>(saved, HttpStatus.CREATED);
         }
-        OffreDTO saved = offerService.createOffer(offer, offererId);
-        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié");
     }
 
     @PatchMapping("/{id}")

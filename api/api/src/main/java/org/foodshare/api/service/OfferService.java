@@ -42,6 +42,10 @@ public class OfferService {
     // Créer une offre avec DTO
     @Transactional
     public OffreDTO createOffer(OffreDTO offreDTO, Long offererId) {
+        if (offererId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non authentifié");
+        }
+
         // 1. Récupère l'utilisateur offreur
         User offerer = userRepository.findById(offererId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur offreur non trouvé"));

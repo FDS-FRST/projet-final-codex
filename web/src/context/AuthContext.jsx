@@ -16,6 +16,20 @@ function decodeJWT(token) {
 
 export const AuthContext = createContext();
 
+function buildUserFromAuthData(data, fallback = {}) {
+  if (data?.user) {
+    return data.user;
+  }
+
+  const user = {
+    name: data?.name || fallback.name,
+    email: data?.email || fallback.email,
+    role: data?.role || fallback.role || 'OFFREUR',
+  };
+
+  return user;
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,10 +51,7 @@ export const AuthProvider = ({ children }) => {
     if (decoded) {
       userId = decoded.userId || decoded.id || decoded.sub;
     }
-    let userObj = data.user;
-    if (!userObj && token) {
-      userObj = { email: credentials.email, role: 'OFFREUR' };
-    }
+    const userObj = buildUserFromAuthData(data, { email: credentials.email, role: 'OFFREUR' });
     if (userId && userObj) {
       userObj.id = userId;
     }
@@ -58,10 +69,7 @@ export const AuthProvider = ({ children }) => {
     if (decoded) {
       userId = decoded.userId || decoded.id || decoded.sub;
     }
-    let userObj = data.user;
-    if (!userObj && token) {
-      userObj = { ...userData, role: userData.role || 'OFFREUR' };
-    }
+    const userObj = buildUserFromAuthData(data, userData);
     if (userId && userObj) {
       userObj.id = userId;
     }
