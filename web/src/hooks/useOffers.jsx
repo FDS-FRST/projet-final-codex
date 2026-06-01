@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getMyOffers, createOffer } from '../api/offers';
+import { getMyOffers, createOffer, getOfferById, deleteOffer } from '../api/offers';
 
 export const useOffers = () => {
   const [offers, setOffers] = useState([]);
@@ -24,9 +24,25 @@ export const useOffers = () => {
     return newOffer;
   };
 
+  const recupererOffreParId = async (id) => {
+    return getOfferById(id);
+  };
+
+  const supprimerOffre = async (id) => {
+    return deleteOffer(id);
+  };
+
   useEffect(() => {
     fetchOffers();
   }, []);
 
-  return { offers, loading, error, fetchOffers, addOffer };
+  return {
+    offers,
+    loading,
+    error,
+    fetchOffers,
+    addOffer,
+    recupererOffreParId,
+    supprimerOffre,
+  };
 };

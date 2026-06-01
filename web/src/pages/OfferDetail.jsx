@@ -1,15 +1,13 @@
-// src/pages/OfferDetail.jsx
-import { useParams, useNavigate } from 'react-router-dom';
-import { useOffers } from '../hooks/useOffers';
-import { useAuth } from '../hooks/useAuth';
 import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { getOfferById, deleteOffer } from '../api/offers';
 
 export const OfferDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { recupererOffreParId, supprimerOffre } = useOffers();
   const { user } = useAuth();
-  
+
   const [offre, setOffre] = useState(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState('');
@@ -20,27 +18,28 @@ export const OfferDetail = () => {
     const chargerOffre = async () => {
       try {
         setChargement(true);
-        const donnees = await recupererOffreParId(id);
+        setErreur('');
+        const donnees = await getOfferById(id);
         setOffre(donnees);
       } catch (err) {
-        setErreur(err.message);
+        setErreur(err.message || 'Erreur lors du chargement de l\'offre');
       } finally {
         setChargement(false);
       }
     };
-    
+
     if (id) {
       chargerOffre();
     }
-  }, [id, recupererOffreParId]);
+  }, [id]);
 
   const handleSupprimer = async () => {
     setSuppression(true);
     try {
-      await supprimerOffre(id);
+      await deleteOffer(id);
       navigate('/');
     } catch (err) {
-      setErreur('Impossible de supprimer l\'offre');
+      setErreur(err.message || 'Impossible de supprimer l\'offre');
     } finally {
       setSuppression(false);
       setShowConfirm(false);
@@ -58,14 +57,16 @@ export const OfferDetail = () => {
   if (erreur || !offre) {
     return (
       <div className="container">
-        <div style={{
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
-          color: '#c00',
-          padding: '2rem',
-          borderRadius: '0.5rem',
-          textAlign: 'center'
-        }}>
+        <div
+          style={{
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            color: '#c00',
+            padding: '2rem',
+            borderRadius: '0.5rem',
+            textAlign: 'center',
+          }}
+        >
           <h2>❌ {erreur || 'Offre non trouvée'}</h2>
           <button onClick={() => navigate('/')}>Retour à l'accueil</button>
         </div>
@@ -73,11 +74,13 @@ export const OfferDetail = () => {
     );
   }
 
-  const estProprietaire = user && offre && user.id === offre.offererId;
+  const estProprietaire = user && offre && String(user.id) === String(offre.offererId);
 
   return (
     <div className="container">
-      <button onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>← Retour</button>
+      <button onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
+        ← Retour
+      </button>
 
       <div style={{ border: '1px solid #ddd', borderRadius: '0.5rem', padding: '1.5rem' }}>
         <h1>{offre.titre || offre.title}</h1>
@@ -94,14 +97,23 @@ export const OfferDetail = () => {
             {!showConfirm ? (
               <button
                 onClick={() => setShowConfirm(true)}
-                style={{ backgroundColor: '#dc2626', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  cursor: 'pointer',
+                }}
               >
                 🗑️ Supprimer
               </button>
             ) : (
               <div style={{ backgroundColor: '#fee', padding: '1rem', borderRadius: '0.375rem' }}>
                 <p>Supprimer cette offre ?</p>
-                <button onClick={handleSupprimer} disabled={suppression}>Oui</button>
+                <button onClick={handleSupprimer} disabled={suppression}>
+                  Oui
+                </button>
                 <button onClick={() => setShowConfirm(false)}>Non</button>
               </div>
             )}
